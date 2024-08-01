@@ -49,13 +49,13 @@ function createCardElement(template, cardData, handleImageClick, handleLikeClick
     likeButton.classList.add('card__like-button_is-active'); 
   }
 
-  cardImage.addEventListener("click", () => handleImageClick(cardData));
-  likeButton.addEventListener("click", handleLikeClick); 
+  cardImage.addEventListener('click', () => handleImageClick(cardData));
+  likeButton.addEventListener('click', handleLikeClick); 
 
   if (cardData.owner._id === userId) {
     deleteButton.addEventListener('click', () => handleDeleteClick(cardData._id, cardElement));
-  } else {
-    deleteButton.style.display = "none";
+  } else if (cardData.owner._id !== userId) {
+    deleteButton.style.display = 'none';
   }
   return cardElement;
 }
