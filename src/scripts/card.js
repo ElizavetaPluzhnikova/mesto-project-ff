@@ -6,25 +6,14 @@ export function handleLikeClick(evt) {
   const likeCounter = cardElement.querySelector(".card__like-counter");
   const cardId = cardElement.dataset.cardId;
 
-  if (likeButton.classList.contains("card__like-button_is-active")) {
-    unlikeCard(cardId)
-    .then((updatedCard) => {
-      likeButton.classList.remove("card__like-button_is-active");
-      likeCounter.textContent = updatedCard.likes.length > 0 ? updatedCard.likes.length : "";
-      if (updatedCard.likes.length === 0) {
-        likeCounter.classList.remove("card__like-counter_is-active");
-      }
-    }) 
-    .catch((err) => console.log(err));
-  } else {
-    likeCard(cardId)
-    .then((updatedCard) => {
-      likeButton.classList.add("card__like-button_is-active"); 
-        likeCounter.textContent = updatedCard.likes.length; 
-        likeCounter.classList.add("card__like-counter_is-active");
+  const likeMethod = likeButton.classList.contains("card__like-button_is-active") ? unlikeCard : likeCard;
+  likeMethod(cardId) 
+    .then((updatedCard) => { 
+      likeButton.classList.toggle("card__like-button_is-active"); 
+      likeCounter.textContent = updatedCard.likes.length || ""; 
+      likeCounter.classList.toggle("card__like-counter_is-active", updatedCard.likes.length > 0)
     })
-    .catch((err) => console.log(err));
-  }
+  .catch(err => console.log(err));
 }
 
 function createCardElement(template, cardData, handleImageClick, handleLikeClick, handleDeleteClick, userId) {
@@ -54,7 +43,7 @@ function createCardElement(template, cardData, handleImageClick, handleLikeClick
 
   if (cardData.owner._id === userId) {
     deleteButton.addEventListener('click', () => handleDeleteClick(cardData._id, cardElement));
-  } else if (cardData.owner._id !== userId) {
+  } else {
     deleteButton.style.display = 'none';
   }
   return cardElement;

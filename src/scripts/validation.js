@@ -1,61 +1,42 @@
-function checkInputValidation(inputElement, settings) {
-    let errorMessage = "";
-
-    if (inputElement.validity.valueMissing) {
-        errorMessage = "Вы пропустили это поле.";
-    }
-
-    else if (inputElement.validity.tooShort) {
-        errorMessage = `В поле должно быть от ${inputElement.minLength} до ${inputElement.maxLength} символов.`;
-    } 
-    
-    else if (inputElement.validity.patternMismatch) {
-        errorMessage = inputElement.dataset.errorMessage || "Неверный формат.";
-    }
-
-    else if (inputElement.validity.typeMismatch) {
-        if (inputElement.type === "url") {
-          errorMessage = "Введите адрес сайта.";
-        } else {
-          errorMessage = "Введите корректное значение.";
-        }
-    }
-
-    inputElement.validity.valid ? hideError(inputElement, settings) : showError(inputElement, errorMessage, settings);
+function checkInputValidation(formElement, inputElement, settings) {
+  if (
+    inputElement.validity.patternMismatch &&
+    inputElement.dataset.errorMessage
+  ) {
+    showError(formElement, inputElement, inputElement.dataset.errorMessage, settings);
+  } else if (!inputElement.validity.valid) {
+    showError(formElement, inputElement, inputElement.validationMessage, settings);
+  } else {
+    hideError(formElement, inputElement, settings);
+  }
 }
 
-function hideError(inputElement, settings) {
-    const errorElement = inputElement
-      .closest(settings.formSelector) 
-      .querySelector(`.${inputElement.name}-input-error`); 
-  
-    if (errorElement) {
-      errorElement.textContent = ""; 
-      errorElement.classList.remove(settings.errorClass); 
-      inputElement.classList.remove(settings.inputErrorClass); 
-    }
+function hideError(formElement, inputElement, settings) {
+    const errorElement = formElement.querySelector(`.${inputElement.name}-input-error`); 
+    errorElement.textContent = ""; 
+    errorElement.classList.remove(settings.errorClass); 
+    inputElement.classList.remove(settings.inputErrorClass); 
 }
 
-function showError(inputElement, errorMessage, settings) {
-    const errorElement = inputElement
-      .closest(settings.formSelector) 
-      .querySelector(`.${inputElement.name}-input-error`); 
-  
-    if (errorElement) {
-      errorElement.textContent = errorMessage; 
-      errorElement.classList.add(settings.errorClass); 
-      inputElement.classList.add(settings.inputErrorClass); 
-    }
+function showError(formElement, inputElement, errorMessage, settings) {
+    const errorElement = formElement.querySelector(`.${inputElement.name}-input-error`); 
+    errorElement.textContent = errorMessage; 
+    errorElement.classList.add(settings.errorClass); 
+    inputElement.classList.add(settings.inputErrorClass); 
 }
 
 function hasInvalidInput(inputList) {
     return inputList.some((inputElement) => !inputElement.validity.valid);
 }
 
+const disableSubmitButton = (buttonElement, settings) => {
+  buttonElement.classList.add(settings.inactiveButtonClass); 
+  buttonElement.disabled = true; 
+}
+
 function toggleButtonState(inputList, buttonElement, settings) {
     if (hasInvalidInput(inputList)) {
-      buttonElement.classList.add(settings.inactiveButtonClass); 
-      buttonElement.disabled = true; 
+      disableSubmitButton(buttonElement, settings) 
     } else {
       buttonElement.classList.remove(settings.inactiveButtonClass); 
       buttonElement.disabled = false; 
@@ -71,7 +52,7 @@ export function enableValidation(settings) {
   
       inputList.forEach((inputElement) => {
         inputElement.addEventListener("input", () => {
-          checkInputValidation(inputElement, settings); 
+          checkInputValidation(formElement, inputElement, settings); 
           toggleButtonState(inputList, buttonElement, settings); 
         });
       });
@@ -86,6 +67,5 @@ export function clearValidation(formElement, settings) {
     const buttonElement = formElement.querySelector(settings.submitButtonSelector);
   
     inputList.forEach((inputElement) => hideError(inputElement, settings));
-    buttonElement.classList.add(settings.inactiveButtonClass);
-    buttonElement.disabled = true;
+    disableSubmitButton(buttonElement, settings) 
 }
